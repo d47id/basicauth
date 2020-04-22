@@ -50,7 +50,7 @@ func New(source AuthSource, realm string) func(http.Handler) http.Handler {
 	}
 }
 
-// defaultHash is hash of the phrase "never gonna give you up" created with bcrypt.DefaultCost
+// defaultHash is the hash of the phrase "never gonna give you up" created with bcrypt.DefaultCost
 var defaultHash = []byte("$2a$10$VMxrnSg4IFeLwRPeh6Uu/O95juIB3GQX39mXXdToLuQWJ1B6QFQO2")
 
 const defaultPass = "never gonna let you down"
