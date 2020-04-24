@@ -1,6 +1,7 @@
 package basicauth
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -48,6 +49,14 @@ func New(source AuthSource, realm string) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// Add adds a basic auth header for the given username and password to the given
+// http.Header
+func Add(h http.Header, username, password string) http.Header {
+	auth := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+	h.Set("Authorization", "Basic "+auth)
+	return h
 }
 
 // defaultHash is the hash of the phrase "never gonna give you up" created with bcrypt.DefaultCost
