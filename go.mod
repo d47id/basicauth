@@ -1,5 +1,5 @@
 module github.com/d47id/basicauth
 
-go 1.14
+go 1.15
 
-require golang.org/x/crypto v0.0.0-20200420201142-3c4aac89819a
+require golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897

@@ -1,8 +1,6 @@
 package basicauth
 
 import (
-	"fmt"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,7 +14,7 @@ type SimpleSource struct {
 
 // NewSimpleSource constructs a SimpleSource from the given username and password.
 func NewSimpleSource(username, password string) (*SimpleSource, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 	if err != nil {
 		return nil, err
 	}
@@ -28,10 +26,10 @@ func NewSimpleSource(username, password string) (*SimpleSource, error) {
 }
 
 // LookupHash implements the AuthSource interface
-func (s *SimpleSource) LookupHash(username string) ([]byte, error) {
+func (s *SimpleSource) LookupHash(username string) []byte {
 	if username != s.user {
-		return nil, fmt.Errorf("unknown user %s", username)
+		return nil
 	}
 
-	return s.hash, nil
+	return s.hash
 }

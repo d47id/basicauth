@@ -1,7 +1,6 @@
 package basicauth
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -13,7 +12,7 @@ import (
 // implementation could use a database or external service to provide password
 // hashes for usernames.
 type AuthSource interface {
-	LookupHash(string) ([]byte, error)
+	LookupHash(string) []byte
 }
 
 // New returns a middleware that adds HTTP basic authentication using the
@@ -30,8 +29,8 @@ func New(source AuthSource, realm string) func(http.Handler) http.Handler {
 			}
 
 			// get password hash from AuthSource
-			hash, err := source.LookupHash(user)
-			if err != nil {
+			hash := source.LookupHash(user)
+			if hash == nil {
 				// a deny might allow an attacker to determine valid usernames
 				// via timing attack. Instead, use a default hash and password
 				// that won't match.
@@ -51,18 +50,18 @@ func New(source AuthSource, realm string) func(http.Handler) http.Handler {
 	}
 }
 
-// Add adds a basic auth header for the given username and password to the given
-// http.Header
-func Add(h http.Header, username, password string) http.Header {
-	auth := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
-	h.Set("Authorization", "Basic "+auth)
-	return h
+const defaultPass = "never gonna give you up"
+
+// defaultHash is the hash of the phrase "never gonna let you down" created with bcrypt.MinCost
+var defaultHash []byte
+
+func init() {
+	var err error
+	defaultHash, err = bcrypt.GenerateFromPassword([]byte("never gonna let you down"), bcrypt.MinCost)
+	if err != nil {
+		panic(err)
+	}
 }
-
-// defaultHash is the hash of the phrase "never gonna give you up" created with bcrypt.DefaultCost
-var defaultHash = []byte("$2a$10$VMxrnSg4IFeLwRPeh6Uu/O95juIB3GQX39mXXdToLuQWJ1B6QFQO2")
-
-const defaultPass = "never gonna let you down"
 
 // deny returns status unauthorized with a www-authenticate header indicating
 // the given realm
