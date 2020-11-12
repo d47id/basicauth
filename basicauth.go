@@ -1,10 +1,24 @@
 package basicauth
 
 import (
+	"context"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+const defaultPass = "never gonna give you up"
+
+// defaultHash is the hash of the phrase "never gonna let you down" created with bcrypt.MinCost
+var defaultHash []byte
+
+func init() {
+	var err error
+	defaultHash, err = bcrypt.GenerateFromPassword([]byte("never gonna let you down"), bcrypt.MinCost)
+	if err != nil {
+		panic(err)
+	}
+}
 
 // AuthSource is the interface the middleware uses to retrieve password hashes.
 // The provided SimpleSource takes a single username/password combination and
@@ -12,7 +26,7 @@ import (
 // implementation could use a database or external service to provide password
 // hashes for usernames.
 type AuthSource interface {
-	LookupHash(string) []byte
+	LookupHash(context.Context, string) []byte
 }
 
 // New returns a middleware that adds HTTP basic authentication using the
@@ -29,7 +43,7 @@ func New(source AuthSource, realm string) func(http.Handler) http.Handler {
 			}
 
 			// get password hash from AuthSource
-			hash := source.LookupHash(user)
+			hash := source.LookupHash(r.Context(), user)
 			if hash == nil {
 				// a deny might allow an attacker to determine valid usernames
 				// via timing attack. Instead, use a default hash and password
@@ -47,19 +61,6 @@ func New(source AuthSource, realm string) func(http.Handler) http.Handler {
 			// allow request
 			next.ServeHTTP(w, r)
 		})
-	}
-}
-
-const defaultPass = "never gonna give you up"
-
-// defaultHash is the hash of the phrase "never gonna let you down" created with bcrypt.MinCost
-var defaultHash []byte
-
-func init() {
-	var err error
-	defaultHash, err = bcrypt.GenerateFromPassword([]byte("never gonna let you down"), bcrypt.MinCost)
-	if err != nil {
-		panic(err)
 	}
 }
 

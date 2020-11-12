@@ -1,6 +1,8 @@
 package basicauth
 
 import (
+	"context"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,7 +28,7 @@ func NewSimpleSource(username, password string) (*SimpleSource, error) {
 }
 
 // LookupHash implements the AuthSource interface
-func (s *SimpleSource) LookupHash(username string) []byte {
+func (s *SimpleSource) LookupHash(_ context.Context, username string) []byte {
 	if username != s.user {
 		return nil
 	}
