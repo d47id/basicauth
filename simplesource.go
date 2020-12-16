@@ -2,6 +2,7 @@ package basicauth
 
 import (
 	"context"
+	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -15,8 +16,12 @@ type SimpleSource struct {
 }
 
 // NewSimpleSource constructs a SimpleSource from the given username and password.
-func NewSimpleSource(username, password string) (*SimpleSource, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+func NewSimpleSource(username, password string, cost int) (*SimpleSource, error) {
+	if cost < bcrypt.MinCost || cost > bcrypt.MaxCost {
+		return nil, fmt.Errorf("invalid bcrypt cost: %d", cost)
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), cost)
 	if err != nil {
 		return nil, err
 	}

@@ -4,15 +4,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestBasicAuth(t *testing.T) {
-	ss, err := NewSimpleSource("test", "test")
+	ss, err := NewSimpleSource("test", "test", bcrypt.DefaultCost)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	mw := New(ss, "test")
+	mw := New(ss, "test", bcrypt.DefaultCost)
 	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// no op
 	}))
@@ -39,12 +41,12 @@ func TestBasicAuth(t *testing.T) {
 }
 
 func BenchmarkBasicAuth(b *testing.B) {
-	ss, err := NewSimpleSource("test", "test")
+	ss, err := NewSimpleSource("test", "test", bcrypt.DefaultCost)
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	mw := New(ss, "test")
+	mw := New(ss, "test", bcrypt.DefaultCost)
 	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// no op
 	}))
